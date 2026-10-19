@@ -11,6 +11,12 @@ appear — meant for the test-point session: if a `04e8:1234` device shows up
 when you force EUB, the BootROM is enumerating and the phone is reachable at
 the lowest level.
 
+The descriptor strings matter: on an Exynos BootROM the
+  product   string reports the SoC name (e.g. "Exynos9830"),
+  serial    string carries the SoC ID + Chip ID,
+  interface string carries the "USB Booting Version".
+Capture all of these during the M0 session.
+
 Requires
 --------
 - Python 3.8+
@@ -66,6 +72,15 @@ def describe(dev) -> str:
                 parts.append(f"{label}={usb.util.get_string(dev, idx)!r}")
             except Exception:
                 pass
+
+    try:
+        # On the Exynos BootROM this string is the "USB Booting Version".
+        cfg = dev.get_active_configuration()
+        iface_idx = cfg[(0, 0)].iInterface
+        if iface_idx:
+            parts.append(f"interface={usb.util.get_string(dev, iface_idx)!r}")
+    except Exception:
+        pass
 
     try:
         parts.append(f"bcdUSB={dev.bcdUSB:#06x} bcdDevice={dev.bcdDevice:#06x}")
