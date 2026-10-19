@@ -8,7 +8,8 @@ Exynos **BootROM**, reachable via a **test point** on the mainboard.
 Commercial tools can use this interface. This project is an open-source,
 cross-platform (macOS/Linux) toolchain for the rescue half of the job:
 
-> **test point in → EUB out → Download Mode → flash stock firmware → alive.**
+> **test point in → EUB out → a write path (Download Mode when exposed,
+> direct partition write as fallback) → stock firmware → alive.**
 
 ## Status: pre-alpha research
 
@@ -16,9 +17,9 @@ cross-platform (macOS/Linux) toolchain for the rescue half of the job:
 | --- | --- | --- |
 | M0 | Test point → EUB → phone appears on USB | monitor tool ready (`tools/eub-detect.py`) |
 | M1 | BootROM USB protocol + BL stage layout research | in progress |
-| M2 | Host driver: talk to the BootROM (pyusb) | not started |
-| M3 | End-to-end: EUB → Download Mode → flash | not started |
-| M4 | Support beyond the first target + docs | not started |
+| M2 | Host driver: talk to the BootROM (pyusb) + write-path decision tree | not started |
+| M3 | End-to-end rescue: **with or without Download Mode** — targeted flash / direct partition replace | not started |
+| M4 | On-device screen feedback (Chimera-style) + more SoCs + docs | not started |
 
 **First target:** Galaxy A35 5G (**SM-A356E**, Exynos 1380) — then generalize
 to other EUB-capable Exynos SoCs.

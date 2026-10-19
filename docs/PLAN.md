@@ -20,18 +20,32 @@ Primary test target: **SM-A356E** (Galaxy A35 5G, Exynos 1380).
 - Map the Exynos 1380 boot chain: which parts exist, where the stage splits are.
 - Artifacts: `notes/protocol.md`, `notes/bl-layout.md`.
 
-### M2 — Host driver
+### M2 — Host driver + write-path decision tree
 - Python + pyusb: detect → handshake → stage upload → execute.
 - Read-only probing first; **no storage writes** until the protocol notes exist.
 - Validate on the bench device; use BootROM crash-info responses as diagnostics.
+- **Never assume Download Mode appears.** Decide the write path dynamically:
+  1. Loke/Thor Download Mode (preferred, if exposed after stage upload)
+  2. direct payload-mediated partition writes from the uploaded EUB state
+     (research; needs a 1380-compatible unsigned-payload path)
 
-### M3 — End-to-end rescue
-- Reach Download Mode via uploaded stages.
-- Flash stock firmware: `odin4` (Linux), `heimdall` (macOS port), or a minimal
-  built-in flasher.
+### M3 — End-to-end rescue (with or without Download Mode)
+- Path A — Download Mode exposed: flash **targeted** packages (boot-only,
+  BL-only, or full stock) via `samloader flash` / `odin4`. Rescue without
+  ever needing a working OS or a normal-bootable device.
+- Path B — Download Mode not exposed: replace the needed partitions directly
+  from the EUB session (payload write service; R&D as above). Likely targets:
+  boot/recovery/vbmeta plus credential/Knox-state partitions behind gate
+  screens (e.g. D2).
 - Validate the full loop: bricked → stock boot.
 
-### M4 — Beyond one phone
+### M4 — Feedback & reach
+- **On-device screen feedback** (Chimera-style "is it connected?")
+  - Phase A (available now): built-in screens as status — boot logo / D2 /
+    Download Mode screen — plus host-side detection of USB re-enumeration.
+  - Phase B (once writes work): store our own splash into the boot-logo
+    partition (`param` / logo family) → custom image on boot.
+  - Phase C (stretch): live framebuffer from a payload — needs display RE.
 - SoC data for more Exynos chips (1330/2400 relatives; help wanted).
 - Upstream 1380 support to hubble (if it fits there) and/or cross-link.
 - Docs: per-model test-point notes (with permission), macOS guide.
