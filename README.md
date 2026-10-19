@@ -68,6 +68,13 @@ python3 tools/eub-detect.py --watch
 #    If a 04e8:1234 device appears: EUB is alive on your unit.
 ```
 
+## Tools
+
+| Tool | Purpose |
+| --- | --- |
+| `tools/eub-detect.py` | Watch USB for the EUB/BootROM (`04e8:1234`) during a test-point session |
+| `tools/odin-fw.py` | Inspect/modify Odin firmware packages: extract the original image ("orig"), restore it into a modified AP tar, rebuild the md5, or pack a boot-only tar |
+
 ## Roadmap details
 
 See [`docs/PLAN.md`](docs/PLAN.md).
