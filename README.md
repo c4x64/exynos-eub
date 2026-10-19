@@ -75,6 +75,10 @@ python3 tools/eub-detect.py --watch
 | --- | --- |
 | `tools/eub-detect.py` | Watch USB for the EUB/BootROM (`04e8:1234`) during a test-point session |
 | `tools/odin-fw.py` | Inspect/modify Odin firmware packages: extract the original image ("orig"), restore it into a modified AP tar, rebuild the md5, or pack a boot-only tar |
+| `tools/arm64-dis.py` | Disassemble arbitrary address ranges of a flat ARM64 bootloader image, with string annotations |
+| `tools/arm64-callers.py` | Find `bl`/`b` call sites to given offsets in a flat bootloader image (reverse call graph) |
+| `tools/arm64-xref.py` | Find code references to string literals (ADRP/ADR pairs) in a flat bootloader image |
+| `tools/fw-scan.py` | Stream tar.md5 + LZ4 firmware members and pattern-scan them without extracting |
 
 ## Roadmap details
 
