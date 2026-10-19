@@ -38,6 +38,7 @@ import copy
 import hashlib
 import io
 import os
+import re
 import sys
 import tarfile
 
@@ -68,10 +69,42 @@ def default_out(path: str) -> str:
     return f"{base}.new.tar" + (".md5" if md5 else "")
 
 
+def _md5_of_prefix(path: str, keep: int) -> str:
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        remaining = keep
+        while remaining:
+            block = f.read(min(CHUNK, remaining))
+            if not block:
+                break
+            h.update(block)
+            remaining -= len(block)
+    return h.hexdigest()
+
+
 def verify_md5(path: str) -> None:
+    """Verify both known .tar.md5 trailer formats:
+
+    - classic: raw 16-byte MD5 digest appended to the tar
+    - factory (FUS packages): an 'md5sum'-style text line appended:
+          <32-hex md5>  <file name>\\n
+    """
     size = os.path.getsize(path)
     if size <= 16:
-        print("  [!] file too small for a .md5 trailer")
+        print("  [!] file too small for an md5 trailer")
+        return
+    with open(path, "rb") as f:
+        f.seek(max(0, size - 256))
+        tail = f.read()
+    m = re.search(rb"([0-9a-f]{32})  ([^\n]+)\n\Z", tail)
+    if m:
+        trailer = len(m.group(0))
+        got = _md5_of_prefix(path, size - trailer)
+        if got.encode() == m.group(1):
+            name = m.group(2).decode(errors="replace")
+            print(f"  md5 OK (factory trailer, original name: {name})")
+        else:
+            print("  [!!] md5 MISMATCH (factory trailer present but digest differs)")
         return
     h = hashlib.md5()
     with open(path, "rb") as f:
@@ -84,7 +117,7 @@ def verify_md5(path: str) -> None:
             remaining -= len(block)
         trailer = f.read(16)
     if h.digest() == trailer:
-        print("  md5 OK")
+        print("  md5 OK (classic raw trailer)")
     else:
         print("  [!!] md5 MISMATCH - file is incomplete/corrupt or was modified")
 
