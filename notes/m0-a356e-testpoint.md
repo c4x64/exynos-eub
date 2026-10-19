@@ -27,8 +27,20 @@ Notes:
 Community (non-vendor) sources — verify the exact pads against your board
 revision/frame before touching anything:
 - "Samsung A35 SM-A356E Testpoint EUB Mode FRP Bypass": https://www.youtube.com/watch?v=LFFzfgiThVs
+  (frame-checked 2026-10-19; annotated still at ~20–58 s)
 - "Samsung A35 A356E FRP Unlock Chimera Tool (Test Point) (EUB Method)": https://www.youtube.com/watch?v=yiJPs8S_dMA
+  (YouTube blocked the download attempt — watch in browser)
 - HalabTech A35 EUB folder (login needed; fallback if videos unclear): https://support.halabtech.com/index.php?a=downloads&b=folder&id=185410
+
+Location seen in video #1 (verify on the real board before touching):
+- On the mainboard, **directly below the rear camera module**, near the left
+  board edge in the video's orientation (camera upper-left, shield cans right).
+- Inside the marked circle: a **small exposed pad** on the blue PCB (dark dot),
+  possible second gold pad at the circle's lower-left edge. At 720p the exact
+  pad layout is at the limit of what the video shows — scrub the clip at
+  0.25x speed to confirm pad count and technique on your unit.
+- General technique (vendor docs, same idea): keep the point shorted while you
+  plug the USB-C cable in, release after the device is seen on USB.
 
 Session procedure (strictly passive for M0):
 1. Phone OFF, unplugged; back cover off; board exposed.
