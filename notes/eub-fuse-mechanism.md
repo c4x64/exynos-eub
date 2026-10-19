@@ -69,3 +69,31 @@ The phone ran the latest patch (class B, 2026) → it booted builds whose
 bootloaders carry the fuse-write path. If a single normal boot executed it,
 the fuse is burned and EUB will not enumerate. The test-point enumeration
 test (M0) remains the only definitive check for this unit.
+
+## Who runs the policy (disassembly)
+
+The fusing engine has two entry points (`0x17b050`, `0x17b31c`) into one
+body. Its call sites in the image:
+
+- `0x1134c0` — inside the boot-time **"Init ddi/efuse"** sequence
+  (`'Init ddi/efuse'` log right before the call). The instruction right
+  after it tests `0xf2f28` — the same USB-boot detector used by
+  `[EFUSE] USB boot! Skip efuse write`.
+- `0x175df8` — a key/OTP-write flow.
+- `0x17e13c` — a bootloader-integrity flow (strings `'usr'`,
+  `'BOOTLOADER'`, `'LDFW'`, `'VBMETA'` nearby).
+
+Inside the engine the SE1 write is gated by:
+
+- the USB-boot skip (`0xf2f28`),
+- a state check at `0x17c9d8` (reads context fields `+0x68` / `+0x70`,
+  the market / `etc_market` fusing state; nonzero result skips the write),
+- context field `+0xd0 == 1` also skips it,
+- the surrounding block only runs for commercial devices
+  (`it's not commercial, skip...`).
+
+Takeaway: the burn is **state-conditional policy run from normal-boot
+init**, not a simple "firmware version ≥ X" switch. A device that never
+executed a qualifying normal boot (e.g. bricked early, or failing the
+state checks) can keep a live EUB even on an 8.5-era build. Per-device
+ground truth remains the enumeration test.
