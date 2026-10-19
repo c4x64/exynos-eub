@@ -1,8 +1,9 @@
 # The EUB-disable fuse — findings in the stock bootloader
 
-Status: mechanism located and disassembled; bracketing — `usb_disable_se1`
-absent in the May-2025 bootloader, present in the Aug-2026 one
-(Feb-2025 download pending) (2026-10-19).
+Status: mechanism located and disassembled; bracketing complete — both
+OTP-disable fields (`usb_disable_se1`, `SE1_RECOVERY_DISABLE`) are absent
+in the Feb-2025 and May-2025 bootloaders and first appear in the Aug-2026
+(8.5-era) one (2026-10-19).
 
 ## Background
 ChimeraTool's Oct 2025 research reported that an April-2025-and-later Exynos
@@ -26,24 +27,26 @@ path with a dedicated field:
 The `usb_disable` string appears only in `sboot.bin` — not in ldfw/tzsw/tzar/
 fld/keystorage (checked).
 
-## Version bracketing — results
+## Version bracketing — results (complete)
 
-FUS version list (SM-A356E / INS) shows a clean break: all builds up to
-**A356EXXS4AYB2 (Feb 2025)** are "class A"; **A356EXXU4BYDC (Apr 2025)** is
-the first "class B" build. Comparison of the extracted `sboot.bin` images
-(all exactly 8 MiB, LZ4-packed in the BL tar):
+FUS version list (SM-A356E / INS) shows a clean break: builds up to
+**A356EXXS4AYB2 (Feb 2025)** are "class A"; **A356EXXU4BYDC (Apr 2025)**
+is the first "class B" build. All three extracted `sboot.bin` images are
+exactly 8 MiB (LZ4-packed inside the BL tar):
 
-| Build | Date | `usb_disable_se1` in sboot.bin |
-| --- | --- | --- |
-| A356EXXS4AYB2 | Feb 2025 | *(download in progress)* |
-| A356EXXU4BYDC | Apr/May 2025 | **absent** — 0 hits |
-| A356EXXSBDZH1 | Aug 2026 | **present** — 1 hit |
+| Build | Date | `usb_disable_se1` | `SE1_RECOVERY_DISABLE` |
+| --- | --- | --- | --- |
+| A356EXXS4AYB2 | Feb 2025 | absent (0) | absent (0) |
+| A356EXXU4BYDC | Apr/May 2025 | absent (0) | absent (0) |
+| A356EXXSBDZH1 | Aug 2026 | **present (1)** | **present (6)** |
 
-Every other piece of the fusing machinery (`fuse history`, `otp_tune`,
-`Update RP`, `etc_market`, `This is a device for Market`, `forced fusing`,
-the USB-boot skip, `SE1_RECOVERY_DISABLE` aside) is **already present** in
-the May-2025 bootloader. Only the SE1 USB-disable field is new in the
-8.5-era build.
+Both OTP-disable fields are new in the **8.5-era (2026) build** — on this
+model the EUB kill did *not* arrive with the April-2025 update (the
+community's "April 2025 and later" line generalises across models; this
+model's own bracket says 2026). Every other piece of the fusing machinery
+(`fuse history`, `otp_tune`, `Update RP`, `etc_market`, `This is a device
+for Market`, `forced fusing`, the USB-boot skip, warranty bit) is already
+present in the Feb-2025 image.
 
 ## Write-site (Aug-2026 image, disassembled with tools/arm64-xref.py)
 
@@ -59,10 +62,10 @@ the May-2025 bootloader. Only the SE1 USB-disable field is new in the
   (`0x17bb70`) is the market-fusing path (`This is a device for Market` →
   `Set etc_market!`).
 
-Open question (partially answered): the SE1 field did not exist in the
-May-2025 bootloader → it was added somewhere between May 2025 and Aug 2026,
-i.e. in the One UI 8.5 era (the same era as the D2 gate). The Feb-2025
-check will confirm the "class A" side.
+Open question — resolved: neither SE1 field exists in the Feb-2025 or
+May-2025 bootloaders; both were added by the Aug-2026 (One UI 8.5-era)
+build — the same era as the D2 gate. The "class A"/"class B" break
+(Feb → Apr 2025) is *not* where the SE1 fields appear on this model.
 
 ## Implication for our unit
 The phone ran the latest patch (class B, 2026) → it booted builds whose
