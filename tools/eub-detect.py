@@ -50,14 +50,21 @@ except ImportError:
 SAMSUNG_VID = 0x04E8
 EUB_PID = 0x1234
 
+# PIDs worth naming when they show up during a bench session.
+SAMSUNG_MODES = {
+    EUB_PID: "** EXYNOS EUB / BOOTROM (DNW mode) — target of this project **",
+    0x685D: "Samsung Download Mode (Odin/Loke) — normal flash path",
+    0x6860: "Samsung Android composite (MTP/ADB) — OS is running",
+    0x6862: "Samsung Android (PTP) — OS is running",
+}
+
 
 def describe(dev) -> str:
     vid, pid = dev.idVendor, dev.idProduct
     tag = ""
-    if vid == SAMSUNG_VID and pid == EUB_PID:
-        tag = "  ** EXYNOS EUB / BOOTROM (DNW mode) **"
-    elif vid == SAMSUNG_VID:
-        tag = "  (Samsung VID)"
+    if vid == SAMSUNG_VID:
+        label = SAMSUNG_MODES.get(pid, "unknown Samsung mode")
+        tag = f"  -> {label}"
 
     parts = [f"{vid:#06x}:{pid:#06x}  bus {dev.bus} addr {dev.address}{tag}"]
 
